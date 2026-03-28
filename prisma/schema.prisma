@@ -12,6 +12,11 @@ enum Role {
   ADMIN
 }
 
+enum MediaType {
+  AUDIO
+  VIDEO
+}
+
 enum ProjectStatus {
   DRAFT
   FUNDING
@@ -48,13 +53,26 @@ model Project {
   revenueSharePercent Decimal
   durationMonths      Int
   
+  coverImageUrl       String?
+  
   status              ProjectStatus @default(DRAFT)
   
   investments         Investment[]
   revenueReports      RevenueReport[]
+  mediaAttachments    MediaAttachment[]
   
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
+}
+
+model MediaAttachment {
+  id        String    @id @default(uuid())
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id])
+  url       String
+  filename  String
+  type      MediaType
+  createdAt DateTime  @default(now())
 }
 
 model Investment {
