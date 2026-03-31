@@ -2,10 +2,11 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { PrismaClient } from '@prisma/client';
+import { S3Service } from '../s3/s3.service';
 
 @Injectable()
 export class ProjectService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private s3Service: S3Service) {}
 
   async create(artistId: string, dto: CreateProjectDto) {
     return this.prisma.project.create({
@@ -51,7 +52,7 @@ export class ProjectService {
     const project = await this.findOne(projectId);
     if (project.artistId !== artistId) throw new BadRequestException('Not project owner');
 
-    const coverImageUrl = `/uploads/${file.filename}`;
+    const coverImageUrl = await this.s3Service.uploadFile(file, 'covers');
     const prisma = this.prisma as unknown as PrismaClient;
     return prisma.project.update({
       where: { id: projectId },
@@ -63,19 +64,23 @@ export class ProjectService {
     const project = await this.findOne(projectId);
     if (project.artistId !== artistId) throw new BadRequestException('Not project owner');
 
-    const mediaRecords = files.map((file) => {
-      let type: 'AUDIO' | 'VIDEO' = 'AUDIO';
-      if (file.mimetype.startsWith('video/')) {
-        type = 'VIDEO';
-      }
+    const mediaRecords = await Promise.all(
+      files.map(async (file) => {
+        let type: 'AUDIO' | 'VIDEO' = 'AUDIO';
+        if (file.mimetype.startsWith('video/')) {
+          type = 'VIDEO';
+        }
 
-      return {
-        projectId,
-        url: `/uploads/${file.filename}`,
-        filename: file.originalname,
-        type,
-      };
-    });
+        const url = await this.s3Service.uploadFile(file, 'music');
+
+        return {
+          projectId,
+          url,
+          filename: file.originalname,
+          type,
+        };
+      })
+    );
 
     const prisma = this.prisma as unknown as PrismaClient;
     await prisma.mediaAttachment.createMany({

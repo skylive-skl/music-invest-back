@@ -10,6 +10,7 @@ import { ProjectModule } from './modules/project/project.module';
 import { InvestmentModule } from './modules/investment/investment.module';
 import { PayoutModule } from './modules/payout/payout.module';
 import { StreamingModule } from './modules/streaming/streaming.module';
+import { S3Module } from './modules/s3/s3.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { StreamingModule } from './modules/streaming/streaming.module';
       serveRoot: '/uploads',
     }),
     StreamingModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService],
