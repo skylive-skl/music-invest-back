@@ -35,16 +35,26 @@ export class S3Service {
 
       await this.s3Client.send(command);
 
-      // Return Cloudflare R2 public URL
-      if (this.publicUrl) {
-        return `${this.publicUrl.replace(/\/$/, '')}/${key}`;
-      }
-
-      // Fallback if no public URL configured
-      return `${process.env.AWS_S3_ENDPOINT}/${this.bucketName}/${key}`;
+      // Save relative path (key) to database instead of full URL
+      return key;
     } catch (error) {
       console.error('Error uploading file to S3 (R2):', error);
       throw new InternalServerErrorException('Could not upload file');
     }
+  }
+
+  getFileUrl(key: string | null | undefined): string | null {
+    if (!key) return null;
+    if (key.startsWith('http://') || key.startsWith('https://')) {
+      return key; // already absolute
+    }
+
+    // Return Cloudflare R2 public URL
+    if (this.publicUrl) {
+      return `${this.publicUrl.replace(/\/$/, '')}/${key}`;
+    }
+
+    // Fallback if no public URL configured
+    return `${process.env.AWS_S3_ENDPOINT}/${this.bucketName}/${key}`;
   }
 }

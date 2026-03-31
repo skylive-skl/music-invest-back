@@ -9,7 +9,7 @@ export class ProjectService {
   constructor(private prisma: PrismaService, private s3Service: S3Service) {}
 
   async create(artistId: string, dto: CreateProjectDto) {
-    return this.prisma.project.create({
+    return this.prisma.extended.project.create({
       data: {
         artistId,
         title: dto.title,
@@ -23,8 +23,7 @@ export class ProjectService {
   }
 
   async findAll() {
-    const prisma = this.prisma as unknown as PrismaClient;
-    return prisma.project.findMany({
+    return this.prisma.extended.project.findMany({
       include: {
         artist: {
           select: { id: true, email: true }
@@ -35,8 +34,7 @@ export class ProjectService {
   }
 
   async findOne(id: string) {
-    const prisma = this.prisma as unknown as PrismaClient;
-    const project = await prisma.project.findUnique({
+    const project = await this.prisma.extended.project.findUnique({
       where: { id },
       include: {
         artist: { select: { id: true, email: true } },
@@ -53,8 +51,7 @@ export class ProjectService {
     if (project.artistId !== artistId) throw new BadRequestException('Not project owner');
 
     const coverImageUrl = await this.s3Service.uploadFile(file, 'covers');
-    const prisma = this.prisma as unknown as PrismaClient;
-    return prisma.project.update({
+    return this.prisma.extended.project.update({
       where: { id: projectId },
       data: { coverImageUrl },
     });
@@ -82,8 +79,7 @@ export class ProjectService {
       })
     );
 
-    const prisma = this.prisma as unknown as PrismaClient;
-    await prisma.mediaAttachment.createMany({
+    await this.prisma.extended.mediaAttachment.createMany({
       data: mediaRecords,
     });
 
