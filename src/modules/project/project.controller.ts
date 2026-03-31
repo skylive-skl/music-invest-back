@@ -6,11 +6,15 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from '../../common/config/multer.config';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 
+@ApiTags('Projects')
 @Controller('projects')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new project' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ARTIST', 'ADMIN')
   @Post()
@@ -18,16 +22,32 @@ export class ProjectController {
     return this.projectService.create(req.user.id, createProjectDto);
   }
 
+  @ApiOperation({ summary: 'Get all projects' })
   @Get()
   async findAll() {
     return this.projectService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get project by ID' })
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.projectService.findOne(id);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upload project cover image' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ARTIST', 'ADMIN')
   @Post(':id/cover')
@@ -41,6 +61,23 @@ export class ProjectController {
     return this.projectService.uploadCover(id, req.user.id, file);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upload project media files' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ARTIST', 'ADMIN')
   @Post(':id/media')
