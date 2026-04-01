@@ -127,11 +127,12 @@ model Withdrawal {
 }
 
 model Album {
-  id            String  @id @default(uuid())
+  id            String    @id @default(uuid())
   title         String
   coverImageUrl String?
+  releaseDate   DateTime?
   artistId      String
-  artist        User    @relation("ArtistAlbums", fields: [artistId], references: [id])
+  artist        User      @relation("ArtistAlbums", fields: [artistId], references: [id])
 
   tracks Track[]
 

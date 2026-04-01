@@ -12,6 +12,7 @@ export class AlbumService {
       data: {
         artistId,
         title: dto.title,
+        ...(dto.releaseDate && { releaseDate: new Date(dto.releaseDate) }),
       },
     });
   }
