@@ -6,7 +6,7 @@ import { S3Service } from '../s3/s3.service';
 
 @Injectable()
 export class ProjectService {
-  constructor(private prisma: PrismaService, private s3Service: S3Service) {}
+  constructor(private prisma: PrismaService, private s3Service: S3Service) { }
 
   async create(artistId: string, dto: CreateProjectDto) {
     return this.prisma.extended.project.create({
@@ -68,7 +68,7 @@ export class ProjectService {
           type = 'VIDEO';
         }
 
-        const url = await this.s3Service.uploadFile(file, 'music');
+        const url = await this.s3Service.uploadFile(file, 'tracks');
 
         return {
           projectId,

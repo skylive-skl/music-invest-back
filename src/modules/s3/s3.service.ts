@@ -20,7 +20,7 @@ export class S3Service {
     });
   }
 
-  async uploadFile(file: Express.Multer.File, folder: 'covers' | 'music'): Promise<string> {
+  async uploadFile(file: Express.Multer.File, folder: 'covers' | 'tracks'): Promise<string> {
     try {
       const extension = extname(file.originalname);
       const uniqueFilename = `${uuidv4()}${extension}`;

@@ -11,6 +11,8 @@ import { InvestmentModule } from './modules/investment/investment.module';
 import { PayoutModule } from './modules/payout/payout.module';
 import { StreamingModule } from './modules/streaming/streaming.module';
 import { S3Module } from './modules/s3/s3.module';
+import { AlbumModule } from './modules/album/album.module';
+import { TrackModule } from './modules/track/track.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { S3Module } from './modules/s3/s3.module';
     }),
     StreamingModule,
     S3Module,
+    AlbumModule,
+    TrackModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -26,43 +26,45 @@ enum ProjectStatus {
 }
 
 model User {
-  id              String       @id @default(uuid())
-  email           String       @unique
-  passwordHash    String
-  role            Role         @default(USER)
-  balance         Decimal      @default(0.0)
-  
+  id           String  @id @default(uuid())
+  email        String  @unique
+  passwordHash String
+  role         Role    @default(USER)
+  balance      Decimal @default(0.0)
+
   projectsCreated Project[]    @relation("ArtistProjects")
   investments     Investment[]
   payouts         Payout[]
   withdrawals     Withdrawal[]
-  
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  albums          Album[]      @relation("ArtistAlbums")
+  tracks          Track[]      @relation("ArtistTracks")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Project {
-  id                  String       @id @default(uuid())
-  title               String
-  description         String
-  artistId            String
-  artist              User         @relation("ArtistProjects", fields: [artistId], references: [id])
-  
+  id          String @id @default(uuid())
+  title       String
+  description String
+  artistId    String
+  artist      User   @relation("ArtistProjects", fields: [artistId], references: [id])
+
   fundingGoal         Decimal
-  currentFunding      Decimal      @default(0.0)
+  currentFunding      Decimal @default(0.0)
   revenueSharePercent Decimal
   durationMonths      Int
-  
-  coverImageUrl       String?
-  
-  status              ProjectStatus @default(DRAFT)
-  
-  investments         Investment[]
-  revenueReports      RevenueReport[]
-  mediaAttachments    MediaAttachment[]
-  
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+
+  coverImageUrl String?
+
+  status ProjectStatus @default(DRAFT)
+
+  investments      Investment[]
+  revenueReports   RevenueReport[]
+  mediaAttachments MediaAttachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model MediaAttachment {
@@ -76,30 +78,30 @@ model MediaAttachment {
 }
 
 model Investment {
-  id           String   @id @default(uuid())
-  projectId    String
-  project      Project  @relation(fields: [projectId], references: [id])
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
-  
+  id        String  @id @default(uuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
   amount       Decimal
-  sharePercent Decimal  @default(0.0)
-  
-  createdAt    DateTime @default(now())
+  sharePercent Decimal @default(0.0)
+
+  createdAt DateTime @default(now())
 }
 
 model RevenueReport {
-  id           String   @id @default(uuid())
-  projectId    String
-  project      Project  @relation(fields: [projectId], references: [id])
-  
-  amount       Decimal
-  periodStart  DateTime
-  periodEnd    DateTime
-  
-  payouts      Payout[]
-  
-  createdAt    DateTime @default(now())
+  id        String  @id @default(uuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  amount      Decimal
+  periodStart DateTime
+  periodEnd   DateTime
+
+  payouts Payout[]
+
+  createdAt DateTime @default(now())
 }
 
 model Payout {
@@ -108,18 +110,47 @@ model Payout {
   revenueReport   RevenueReport @relation(fields: [revenueReportId], references: [id])
   userId          String
   user            User          @relation(fields: [userId], references: [id])
-  
-  amount          Decimal
-  
-  createdAt       DateTime      @default(now())
+
+  amount Decimal
+
+  createdAt DateTime @default(now())
 }
 
 model Withdrawal {
-  id              String        @id @default(uuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id])
-  amount          Decimal
-  status          String        @default("PENDING")
-  
-  createdAt       DateTime      @default(now())
+  id     String  @id @default(uuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id])
+  amount Decimal
+  status String  @default("PENDING")
+
+  createdAt DateTime @default(now())
+}
+
+model Album {
+  id            String  @id @default(uuid())
+  title         String
+  coverImageUrl String?
+  artistId      String
+  artist        User    @relation("ArtistAlbums", fields: [artistId], references: [id])
+
+  tracks Track[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Track {
+  id       String @id @default(uuid())
+  title    String
+  audioUrl String
+  duration Int    @default(0) // Duration in seconds
+
+  albumId String
+  album   Album  @relation(fields: [albumId], references: [id])
+
+  artistId String
+  artist   User   @relation("ArtistTracks", fields: [artistId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
