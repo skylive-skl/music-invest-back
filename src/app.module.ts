@@ -12,6 +12,7 @@ import { PayoutModule } from './modules/payout/payout.module';
 import { S3Module } from './modules/s3/s3.module';
 import { AlbumModule } from './modules/album/album.module';
 import { TrackModule } from './modules/track/track.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TrackModule } from './modules/track/track.module';
     S3Module,
     AlbumModule,
     TrackModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],
