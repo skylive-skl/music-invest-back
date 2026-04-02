@@ -1,98 +1,297 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🎵 Music Invest Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Бэкенд платформы для музыкального краудфандинга и разделения доходов.  
+Артисты создают проекты для привлечения инвестиций, а инвесторы получают долю от выручки пропорционально вложениям.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**Стек:** NestJS · Prisma · PostgreSQL · AWS S3 · JWT
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Быстрый старт
 
-## Project setup
+### Требования
+
+- Node.js >= 18
+- PostgreSQL
+- AWS S3-совместимое хранилище (или MinIO для локальной разработки)
+
+### Установка
 
 ```bash
-$ npm install
+# 1. Установить зависимости
+npm install
+
+# 2. Скопировать файл окружения и заполнить переменные
+cp .env.example .env
+
+# 3. Синхронизировать схему с базой данных
+npx prisma db push
+
+# 4. Запустить приложение в режиме разработки
+npm run start:dev
+
+# 5. Собрать приложение
+npm run build
+
+# 6. Запустить приложение в режиме production
+npm run start:prod
 ```
 
-## Compile and run the project
+### Переменные окружения (`.env`)
 
-```bash
-# development
-$ npm run start
+| Переменная | Описание |
+|---|---|
+| `DATABASE_URL` | Строка подключения к PostgreSQL |
+| `JWT_SECRET` | Секрет для подписи JWT-токенов |
+| `AWS_ACCESS_KEY_ID` | AWS / S3-совместимый Access Key |
+| `AWS_SECRET_ACCESS_KEY` | AWS / S3-совместимый Secret Key |
+| `AWS_REGION` | Регион S3 (например, `eu-central-1`) |
+| `AWS_S3_BUCKET` | Название S3-бакета |
+| `AWS_S3_ENDPOINT` | Кастомный endpoint (для MinIO и пр.) |
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
+## 📐 Схема базы данных
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  User                                                            │
+│  id · email · passwordHash · role(USER|ARTIST|ADMIN) · balance  │
+└────────┬───────────────────────────────────────────────────┬─────┘
+         │ 1:N                                               │ 1:N
+         ▼                                                   ▼
+┌────────────────────┐                         ┌────────────────────┐
+│  Project           │                         │  Album             │
+│  id · title        │                         │  id · title        │
+│  description       │                         │  coverImageUrl     │
+│  fundingGoal       │                         │  releaseDate       │
+│  currentFunding    │                         │  artistId          │
+│  revenueShare%     │                         └────────┬───────────┘
+│  durationMonths    │                                  │ 1:N
+│  coverImageUrl     │                                  ▼
+│  status            │                         ┌────────────────────┐
+└────────┬───────────┘                         │  Track             │
+         │                                     │  id · title        │
+    ┌────┴──────────────────┐                  │  audioUrl          │
+    │                       │                  │  duration (sec)    │
+    ▼                       ▼                  │  albumId           │
+┌──────────────┐  ┌──────────────────┐        │  artistId          │
+│  Investment  │  │  MediaAttachment │        └────────────────────┘
+│  userId      │  │  url · filename  │
+│  amount      │  │  type(AUDIO|VIDEO│
+│  sharePercent│  └──────────────────┘
+└──────┬───────┘
+       │
+       ▼
+┌──────────────────┐      ┌──────────┐      ┌────────────┐
+│  RevenueReport   │─1:N─▶│  Payout  │      │ Withdrawal │
+│  amount          │      │  userId  │      │ userId     │
+│  periodStart/End │      │  amount  │      │ amount     │
+└──────────────────┘      └──────────┘      │ status     │
+                                            └────────────┘
 ```
 
-## Run tests
+### Модели
 
-```bash
-# unit tests
-$ npm run test
+| Модель | Описание |
+|---|---|
+| `User` | Пользователь системы. Роли: `USER`, `ARTIST`, `ADMIN` |
+| `Project` | Музыкальный краудфандинг-проект, созданный артистом |
+| `MediaAttachment` | Аудио/видео-вложение к проекту |
+| `Investment` | Инвестиция пользователя в проект |
+| `RevenueReport` | Отчёт о выручке, поданный артистом |
+| `Payout` | Автоматически рассчитанная выплата инвестору |
+| `Withdrawal` | Запрос на вывод средств с баланса |
+| `Album` | Музыкальный альбом (или сингл) артиста |
+| `Track` | Трек, привязанный к альбому. Хранит URL аудио и длительность |
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
+## 🔌 REST API
+
+Полная интерактивная документация доступна после запуска приложения:  
+**`http://localhost:3000/api`** (Swagger UI)
+
+---
+
+### 🔑 Auth — `/auth`
+
+| Метод | Путь | Доступ | Описание |
+|---|---|---|---|
+| `POST` | `/auth/register` | Публичный | Регистрация нового пользователя |
+| `POST` | `/auth/login` | Публичный | Вход, получение JWT-токена |
+
+**Тело запроса `/auth/register`:**
+
+```json
+{
+  "email": "artist@example.com",
+  "password": "password123",
+  "role": "ARTIST"
+}
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### 👤 Users — `/users`
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Метод | Путь | Доступ | Описание |
+|---|---|---|---|
+| `GET` | `/users` | Публичный | Список всех пользователей |
+| `GET` | `/users/me` | 🔐 Любой | Профиль текущего пользователя |
+| `GET` | `/users/wallet` | 🔐 Любой | Баланс кошелька |
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+---
+
+### 🎼 Projects — `/projects`
+
+| Метод | Путь | Доступ | Описание |
+|---|---|---|---|
+| `POST` | `/projects` | 🔐 ARTIST, ADMIN | Создать новый проект |
+| `GET` | `/projects` | Публичный | Список всех проектов |
+| `GET` | `/projects/:id` | Публичный | Детали проекта по ID |
+| `POST` | `/projects/:id/cover` | 🔐 ARTIST, ADMIN | Загрузить обложку проекта |
+| `POST` | `/projects/:id/media` | 🔐 ARTIST, ADMIN | Загрузить медиафайлы проекта |
+
+**Тело запроса `POST /projects`:**
+
+```json
+{
+  "title": "My New Album Fund",
+  "description": "Help me record my debut album",
+  "fundingGoal": 50000,
+  "revenueSharePercent": 20,
+  "durationMonths": 12
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+### 💿 Albums — `/albums`
 
-Check out a few resources that may come in handy when working with NestJS:
+| Метод | Путь | Доступ | Описание |
+|---|---|---|---|
+| `POST` | `/albums` | 🔐 ARTIST, ADMIN | Создать новый альбом |
+| `GET` | `/albums` | Публичный | Список всех альбомов |
+| `GET` | `/albums/:id` | Публичный | Альбом с треками по ID |
+| `POST` | `/albums/:id/cover` | 🔐 ARTIST, ADMIN | Загрузить обложку альбома |
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+**Тело запроса `POST /albums`:**
 
-## Support
+```json
+{
+  "title": "Nevermind",
+  "releaseDate": "1991-09-24"
+}
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+### 🎵 Tracks — `/tracks`
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Метод | Путь | Доступ | Описание |
+|---|---|---|---|
+| `POST` | `/tracks` | 🔐 ARTIST, ADMIN | Создать метаданные трека |
+| `GET` | `/tracks` | Публичный | Список всех треков |
+| `GET` | `/tracks/:id` | Публичный | Трек по ID |
+| `POST` | `/tracks/:id/audio` | 🔐 ARTIST, ADMIN | Загрузить аудиофайл трека |
 
-## License
+> При загрузке аудио (`POST /tracks/:id/audio`) бэкенд **автоматически** определяет длительность трека из метаданных файла.  
+> Разрешённые форматы: `audio/mpeg` (MP3), `audio/wav`, `audio/flac`, `audio/aac`, `audio/ogg`.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Тело запроса `POST /tracks`:**
+
+```json
+{
+  "title": "Smells Like Teen Spirit",
+  "albumId": "uuid-of-the-album"
+}
+```
+
+---
+
+### 💰 Investments — `/investments`
+
+| Метод | Путь | Доступ | Описание |
+|---|---|---|---|
+| `POST` | `/investments` | 🔐 Любой | Инвестировать в проект |
+| `GET` | `/investments/my-investments` | 🔐 Любой | Мои инвестиции |
+
+**Тело запроса `POST /investments`:**
+
+```json
+{
+  "projectId": "uuid-of-project",
+  "amount": 5000
+}
+```
+
+---
+
+### 💸 Payouts — `/payouts`
+
+| Метод | Путь | Доступ | Описание |
+|---|---|---|---|
+| `POST` | `/payouts/revenue` | 🔐 ARTIST, ADMIN | Подать отчёт о выручке |
+| `GET` | `/payouts/history` | 🔐 Любой | История выплат |
+
+> После подачи отчёта о выручке система **автоматически рассчитывает и начисляет выплаты** всем инвесторам проекта пропорционально их доле.
+
+---
+
+
+## 🏗️ Архитектура проекта
+
+```
+src/
+├── common/
+│   ├── config/           # multer.config.ts — настройки загрузки файлов
+│   ├── decorators/       # @Roles()
+│   └── guards/           # JwtAuthGuard, RolesGuard
+├── prisma/               # PrismaService, PrismaModule
+└── modules/
+    ├── auth/             # Регистрация, вход, JWT
+    ├── user/             # Профиль, кошелёк
+    ├── project/          # Краудфандинг-проекты
+    ├── investment/       # Инвестиции в проекты
+    ├── payout/           # Отчёты о выручке и выплаты
+    ├── album/            # Альбомы артиста
+    ├── track/            # Треки артиста
+    ├── s3/               # Сервис для работы с AWS S3
+```
+
+---
+
+## 🔐 Авторизация
+
+Большинство мутирующих эндпоинтов требуют JWT-токен в заголовке:
+
+```
+Authorization: Bearer <token>
+```
+
+Токен выдаётся при успешном входе через `POST /auth/login`.
+
+### Роли
+
+| Роль | Возможности |
+|---|---|
+| `USER` | Просмотр контента, инвестирование |
+| `ARTIST` | Всё из USER + создание проектов, альбомов, треков; загрузка файлов; подача отчётов о выручке |
+| `ADMIN` | Полный доступ ко всем эндпоинтам |
+
+---
+
+## 📦 Типичный сценарий (артист)
+
+```
+1. POST /auth/register          → зарегистрироваться как ARTIST
+2. POST /auth/login             → получить JWT-токен
+3. POST /projects               → создать краудфандинг-проект
+4. POST /projects/:id/cover     → загрузить обложку проекта
+5. POST /albums                 → создать альбом (например, сингл)
+6. POST /albums/:id/cover       → загрузить обложку альбома
+7. POST /tracks                 → создать трек (с albumId)
+8. POST /tracks/:id/audio       → загрузить аудиофайл (.mp3 / .wav)
+9. POST /payouts/revenue        → подать отчёт о выручке (выплаты рассчитываются автоматически)
+```

@@ -9,7 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ProjectModule } from './modules/project/project.module';
 import { InvestmentModule } from './modules/investment/investment.module';
 import { PayoutModule } from './modules/payout/payout.module';
-import { StreamingModule } from './modules/streaming/streaming.module';
+
 import { S3Module } from './modules/s3/s3.module';
 import { AlbumModule } from './modules/album/album.module';
 import { TrackModule } from './modules/track/track.module';
@@ -26,7 +26,6 @@ import { TrackModule } from './modules/track/track.module';
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
-    StreamingModule,
     S3Module,
     AlbumModule,
     TrackModule,
