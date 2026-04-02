@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Req, UseInterceptors, UploadedFile, UploadedFiles, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, UseInterceptors, UploadedFile, UploadedFiles, BadRequestException, Query } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { FilterProjectDto } from './dto/filter-project.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -24,8 +25,8 @@ export class ProjectController {
 
   @ApiOperation({ summary: 'Get all projects' })
   @Get()
-  async findAll() {
-    return this.projectService.findAll();
+  async findAll(@Query() filter: FilterProjectDto) {
+    return this.projectService.findAll(filter);
   }
 
   @ApiOperation({ summary: 'Get project by ID' })

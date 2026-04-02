@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { FilterProjectDto } from './dto/filter-project.dto';
 import { PrismaClient } from '@prisma/client';
 import { S3Service } from '../s3/s3.service';
 
@@ -22,14 +23,21 @@ export class ProjectService {
     });
   }
 
-  async findAll() {
+  async findAll(filter: FilterProjectDto = {}) {
+    const where: Record<string, any> = {};
+
+    if (filter.artistId) {
+      where.artistId = filter.artistId;
+    }
+
     return this.prisma.extended.project.findMany({
+      where,
       include: {
         artist: {
-          select: { id: true, email: true }
+          select: { id: true, email: true },
         },
         mediaAttachments: true,
-      }
+      },
     });
   }
 
