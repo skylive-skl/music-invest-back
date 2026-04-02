@@ -149,6 +149,7 @@ npm run start:prod
 |---|---|---|---|
 | `POST` | `/projects` | 🔐 ARTIST, ADMIN | Создать новый проект |
 | `GET` | `/projects` | Публичный | Список всех проектов |
+| `GET` | `/projects?artistId=<uuid>` | Публичный | Только проекты конкретного артиста |
 | `GET` | `/projects/:id` | Публичный | Детали проекта по ID |
 | `POST` | `/projects/:id/cover` | 🔐 ARTIST, ADMIN | Загрузить обложку проекта |
 | `POST` | `/projects/:id/media` | 🔐 ARTIST, ADMIN | Загрузить медиафайлы проекта |
