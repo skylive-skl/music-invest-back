@@ -5,10 +5,10 @@ import { S3Service } from '../s3/s3.service';
 
 @Injectable()
 export class AlbumService {
-  constructor(private prisma: PrismaService, private s3Service: S3Service) {}
+  constructor(private prisma: PrismaService, private s3Service: S3Service) { }
 
   async create(artistId: string, dto: CreateAlbumDto) {
-    return this.prisma.extended.album.create({
+    return this.prisma.album.create({
       data: {
         artistId,
         title: dto.title,
@@ -18,7 +18,7 @@ export class AlbumService {
   }
 
   async findAll() {
-    return this.prisma.extended.album.findMany({
+    return this.prisma.album.findMany({
       include: {
         artist: {
           select: { id: true, email: true }
@@ -29,7 +29,7 @@ export class AlbumService {
   }
 
   async findOne(id: string) {
-    const album = await this.prisma.extended.album.findUnique({
+    const album = await this.prisma.album.findUnique({
       where: { id },
       include: {
         artist: { select: { id: true, email: true } },
@@ -49,7 +49,7 @@ export class AlbumService {
     }
 
     const coverImageUrl = await this.s3Service.uploadFile(file, 'covers');
-    return this.prisma.extended.album.update({
+    return this.prisma.album.update({
       where: { id: albumId },
       data: { coverImageUrl },
     });
