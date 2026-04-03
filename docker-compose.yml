@@ -1,17 +1,38 @@
 version: '3.8'
 
 services:
+  app:
+    build:
+      context: .
+      target: runtime
+    container_name: music-invest-app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+
   db:
     image: postgres:15-alpine
     container_name: music-invest-db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: music_invest
+    env_file:
+      - .env.production
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - music-invest-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-music_invest}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   music-invest-pgdata:

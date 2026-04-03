@@ -51,6 +51,41 @@ npm run start:prod
 
 ---
 
+## 🐳 Production запуск через Docker Compose
+
+### 1. Подготовить production-переменные
+
+```bash
+cp .env.production.example .env.production
+```
+
+Заполните `.env.production` реальными значениями:
+- `POSTGRES_PASSWORD`
+- `JWT_SECRET`
+- `AWS_S3_BUCKET_NAME`
+- `AWS_S3_ENDPOINT`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `R2_PUBLIC_URL`
+
+### 2. Собрать и запустить контейнеры
+
+```bash
+docker compose up --build -d
+```
+
+### 3. Проверить статус
+
+```bash
+docker compose ps
+docker compose logs -f app
+```
+
+При старте `app` контейнер автоматически выполняет `prisma migrate deploy`,
+после чего запускает NestJS в режиме production.
+
+---
+
 ## 📐 Схема базы данных
 
 ```
