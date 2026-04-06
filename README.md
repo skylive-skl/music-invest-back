@@ -147,6 +147,16 @@ docker compose logs -f app
 Полная интерактивная документация доступна после запуска приложения:  
 **`http://localhost:3000/api`** (Swagger UI)
 
+Сгенерировать OpenAPI-файлы можно командой:
+
+```bash
+npm run openapi:generate
+```
+
+Файлы будут сохранены в `docs/openapi/`:
+- `docs/openapi/openapi.yaml`
+- `docs/openapi/openapi.json`
+
 ---
 
 ### 🔑 Auth — `/auth`

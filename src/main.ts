@@ -1,18 +1,13 @@
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { createOpenApiDocument } from './common/config/openapi.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const config = new DocumentBuilder()
-    .setTitle('Music Invest API')
-    .setDescription('The API for music investment and crowdfunding platform')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  const document = createOpenApiDocument(app);
+  SwaggerModule.setup('api', app, document);
 
   app.enableCors({
     origin: '*',
