@@ -147,6 +147,10 @@ docker compose logs -f app
 Полная интерактивная документация доступна после запуска приложения:  
 **`http://localhost:3000/api`** (Swagger UI)
 
+OpenAPI-файлы доступны по прямым ссылкам:
+- `http://localhost:3000/api-specs/openapi.json`
+- `http://localhost:3000/api-specs/openapi.yaml`
+
 Сгенерировать OpenAPI-файлы можно командой:
 
 ```bash
